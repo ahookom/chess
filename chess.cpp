@@ -505,7 +505,7 @@ int requestmove(int *x1, int *y1,int*x2,int*y2){
 
 		moveanalysis(moves, player);
 
-		printmovestats(countmoves(player), moves);
+		//printmovestats(countmoves(player), moves);
 
 		int moverow=pickmove(moves,player, x1,y1,x2,y2);
 
