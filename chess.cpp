@@ -1,4 +1,4 @@
-#include <stdio.h>
+ – #include <stdio.h>
 #include <fstream>
 #include <iostream>
 #include <stdlib.h>
@@ -28,11 +28,22 @@ const int MAXMOVES=218;
 
 const int EXIT=86;
 
+const int DEBUG=FALSE;
+
 //some useful game settings that are needed by many functions
+
+//determines whether the AI is playing
 int AIsetting=FALSE;
+
+//determines whether someone has won the game
 int win=FALSE;
-bool player=0;
+
+//determines whose turn it is
+bool player=white;
+
 int error=FALSE;
+
+//counts how many moves have happened
 int turn = 1;
 
 //function prototypes
@@ -43,7 +54,7 @@ int countmoves(bool player);
 int requestmove(int *x1, int *y1, int *x2, int *y2);
 int legalmove(int player, int *x1, int *y1, int *x2, int *y2);
 int gamemove();
-int undomove();
+
 int initialize_pieces();
 void startingarrangement();
 int countpieces();
@@ -59,7 +70,8 @@ signed int positionimproved(int x1, int y1, int x2, int y2);
 string move(int x1, int y1, int x2, int y2);
 
 
-//definition of piece structure
+/*definition of piece structure -- each piece keeps track of how many times it has moved, whether it just moved or not, and what color and type (knight, pawn, etc) of piece it is. Unoccupied squares contain "empty" pieces.*/
+
 struct piece {
 bool empty;
 int color;
@@ -89,7 +101,7 @@ int row;
 int col;
 };
 
-//initializing a board array and each type of piece
+//initializing a board array and each piece
 struct piece *board[8][8];
 struct piece empty;
 struct piece wking;
@@ -143,7 +155,7 @@ int main(int argc, char * argv[]){
 		}
 
 		if(savestatus!='n'&&savestatus!='N'){
-			printf("Please type the filename to load: ");
+			printf("Please type the filename to load (default is 'save.dat'): ");
 			while(!(cin >> loadfile)){
 				cin.clear();
 				cin.ignore();
@@ -169,7 +181,7 @@ int main(int argc, char * argv[]){
 
 				restore >> x1 >> y1 >> x2 >> y2;
 				updateboard(x1,y1,x2,y2);
-				cout << move(x1,y1,x2,y2).c_str() << "\n";
+//				cout << move(x1,y1,x2,y2).c_str() << "\n";
 
 			}
 
@@ -207,7 +219,7 @@ int main(int argc, char * argv[]){
 		else if(ai==('B'|'b'))AIsetting=2;
 	}
 
-//turn request cycle print board, ask for moves until you get a valid one, check if the game is ended, update whose turn it is and repeat
+//turn request cycle: print board, ask for moves until you get a valid one, check if the game is ended, update whose turn it is and repeat
 	while(win==0){
 		
 		printboard();
@@ -219,8 +231,8 @@ int main(int argc, char * argv[]){
 		
 			if(check!=0){
 				for(int i=0;i<20;i++){
-					if(player=0)printf("\nWhite Victory!!!");
-					if(player=1)printf("\nGlorious Black Triumphs!!");
+					if(player==0)printf("\nWhite Victory!!!");
+					if(player==1)printf("\nGlorious Black Triumphs!!");
 				}
 				return 0;
 			}else{
@@ -263,10 +275,6 @@ signed int positionimproved(int x1, int y1, int x2, int y2){
 }
 
 
-int undomove(){
-
-
-}
 
 int weakestthreat(int opponent, int x1, int y1){
 	int mover = (opponent+1)%2;
@@ -277,7 +285,7 @@ int weakestthreat(int opponent, int x1, int y1){
 		for(int j=0;j<8;j++){
 			currentpiecevalue=pvalue(i,j);
 			if(currentpiecevalue>0&&currentpiecevalue<minattacker&&legalmove(opponent,&i,&j,&x1,&y1)==1){
-			minattacker==currentpiecevalue;
+			minattacker=currentpiecevalue;
 			}
 		}
 	}
@@ -392,7 +400,7 @@ int opponent=player+1%2;
 
 	}
 //assign movescores
-printf("White has %d safe moves.\n",safemcount+1);
+if(DEBUG==TRUE)printf("White has %d safe moves.\n",safemcount+1);
 	for(int i=0;i<=safemcount;i++){
 
 		int j=moves[i].startrow;
@@ -487,7 +495,7 @@ int pickmove(struct movestats moves[MAXMOVES],bool player, int *x1, int *y1,int*
 		
 
 	}
-
+return 0;
 }
 
 
@@ -505,11 +513,12 @@ int requestmove(int *x1, int *y1,int*x2,int*y2){
 
 		moveanalysis(moves, player);
 
-		//printmovestats(countmoves(player), moves);
+		
+		if(DEBUG==TRUE)printmovestats(countmoves(player), moves);
 
 		int moverow=pickmove(moves,player, x1,y1,x2,y2);
 
-		printf("AI picks to use move %d \n",moverow+1);
+		if(DEBUG==TRUE)printf("AI picks to use move %d \n",moverow+1);
 
 		*x1=moves[moverow].startrow;
 		*y1=moves[moverow].startcol;
@@ -517,34 +526,33 @@ int requestmove(int *x1, int *y1,int*x2,int*y2){
 		*y2=moves[moverow].endcol;
 
 
-		printf("AI requests to move (%d, %d) to (%d, %d)",*x1,*y1,*x2,*y2);
+		if(DEBUG==TRUE)printf("AI requests to move (%d, %d) to (%d, %d)",*x1,*y1,*x2,*y2);
 
 	}else{
-
-		printf("Player has %d legal moves. ",countmoves(player));
+		if(DEBUG==TRUE)printf("Player has %d legal moves. ",countmoves(player));
 		if(player==0)printf("White player enter move: ");
 		else if(player==1)printf("Black player enter move: ");
 
 		while(!(cin >> oldletter)){
 			cin.clear();
 			cin.ignore();
-			printf("Invalid entry. Try again: ");
+			printf("Invalid starting column letter. Try again. ");
 		}
 		if(oldletter=='x'||oldletter=='X')return EXIT;
 		while(!(cin >> oldnumber)){
 			cin.clear();
 			cin.ignore();
-			printf("Invalid entry. Try again: ");
+			printf("Invalid starting row number. Try again. ");
 		}
 		while(!(cin >> newletter)){
 			cin.clear();
 			cin.ignore();
-			printf("Invalid entry. Try again: ");
+			printf("Invalid ending column letter. Try again. ");
 		}
 		while(!(cin >> newnumber)){
 			cin.clear();
 			cin.ignore();
-			printf("Invalid entry. Try again: ");
+			printf("Invalid ending row number. Try again. ");
 		}
 
 
@@ -557,7 +565,10 @@ int requestmove(int *x1, int *y1,int*x2,int*y2){
 	//printf("looks like player wants to move from %d, %d to %d, %d",*x1,*y1,*x2,*y2);
 	//printf("the piece at %d, %d is of type %d\n",*x1,*y1,board[*x1][*y1]->type);
 	}
-	if(legalmove(player, x1,y1,x2,y2)==1){printf("A legal move was requested.\n");return 1;}
+	if(legalmove(player, x1,y1,x2,y2)==1){
+		if(DEBUG==TRUE)printf("A legal move was requested.\n");
+		return 1;
+	}
 	else{printf("That's not a legal move.\n\n"); return 0;}
 
 }
@@ -771,6 +782,7 @@ if(board[x1][y1]->type==king&&(board[x1][y1]->timesmoved==0)&&(x2==x1)&&abs(y2-y
 
 	player=((player+1)%2);
 	turn++;
+	return 0;
 }
 
 
