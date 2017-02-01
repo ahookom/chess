@@ -1191,7 +1191,7 @@ int isdefended(int defender, int i, int j){
 	bool isempty = board[i][j]->empty;
 	
 	if(originalcolor!=opponent)board[i][j]->color = opponent;
-	if(isempty==1)board[i][j]->empty==0;
+	if(isempty==1)board[i][j]->empty=0;
 	
 	for(int k=0;k<8;k++){
 		for(int l=0;l<8;l++){
